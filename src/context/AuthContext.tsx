@@ -5,9 +5,9 @@ import {
   useEffect,
   useReducer,
 } from "react";
-import useFetch from "../hooks/useFetch";
+import { getStorage, removeStorage, setStorage } from "../utils/localStorage";
 
-type UserInfo = {
+export type UserInfo = {
   id: number | null;
   name: string | null;
 };
@@ -24,23 +24,9 @@ type Action =
   | { type: "logout"; payload: null };
 
 const defualtUserInfo: UserInfo = {
-  id: 0,
-  name: "",
+  id: null,
+  name: null,
 };
-
-const KEY = "UserInfo";
-function setStorage(auth: UserInfo) {
-  localStorage.setItem(KEY, JSON.stringify(auth));
-}
-
-function getStorage() {
-  const storedData = localStorage.getItem(KEY);
-  if (storedData) {
-    return JSON.parse(storedData);
-  }
-  setStorage(defualtUserInfo);
-  return defualtUserInfo;
-}
 
 const AuthContext = createContext<Auth>({
   auth: defualtUserInfo,
@@ -63,7 +49,7 @@ const reducer = (state: UserInfo, { type, payload }: Action) => {
     default:
       return state;
   }
-  setStorage(newer);
+  setStorage("UserInfo", newer);
   return newer;
 };
 
@@ -75,18 +61,17 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
       `https://jsonplaceholder.typicode.com/users/${id}`
     );
     const userInfo = await response.json();
-    // const { data } = useFetch({
-    //   url: `https://jsonplaceholder.typicode.com/users/${id}`,
-    //   defaultData: defualtUserInfo,
-    // });
-    // console.log(data);
     dispatch({ type: "login", payload: { id, name: userInfo.username } });
   };
 
-  const logout = () => dispatch({ type: "logout", payload: null });
+  const logout = () => {
+    removeStorage("AlbumId");
+    dispatch({ type: "logout", payload: null });
+  };
 
   useEffect(() => {
-    dispatch({ type: "setData", payload: getStorage() });
+    const storedData = getStorage<UserInfo>("UserInfo");
+    if (storedData) dispatch({ type: "setData", payload: storedData });
   }, []);
 
   return (

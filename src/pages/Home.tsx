@@ -1,39 +1,46 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { IoMdPhotos } from "react-icons/io";
 import { IoPerson } from "react-icons/io5";
 import { useAuth } from "../context/AuthContext";
-import useFetch from "../hooks/useFetch";
-import { Button } from "../components";
+import { Button, Modal } from "../components";
 
 const Home = () => {
   const navigate = useNavigate();
+
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
   const idRef = useRef<HTMLInputElement | null>(null);
 
   const { login } = useAuth();
 
   const handleSubmit = () => {
     if (!idRef.current || !idRef.current.value) {
-      alert("아이디를 입력해 주세요.");
+      setModalOpen(true);
       idRef.current?.focus();
       return;
     }
-    login(+idRef.current.value);
 
-    idRef.current!.value = "";
-    navigate("/album");
+    const id = +idRef.current.value;
+    if (id > 0 && id <= 10) {
+      login(id);
+
+      idRef.current!.value = "";
+      navigate("/album");
+    }
   };
 
   return (
-    <section className="flex flex-col justify-center items-center h-full">
+    <section
+      className={`flex flex-col justify-center items-center h-full ${
+        modalOpen && "bg-[#dfdfdf]"
+      }`}
+    >
       <div className="flex flex-col justify-center items-center">
-        {/* 로고 & 이름 */}
         <div className="flex flex-col items-center">
           <IoMdPhotos size="64" color="#27374D" />
           <div className="text-3xl font-bold">Hanaro Album</div>
         </div>
 
-        {/* 아이디 */}
         <div className="flex justify-center mt-8 mb-4 gap-2">
           <IoPerson size="24" color="#27374D" />
           <div>
@@ -51,7 +58,6 @@ const Home = () => {
           </div>
         </div>
 
-        {/* 로그인 버튼 */}
         <Button
           type="button"
           variant="primary"
@@ -61,6 +67,12 @@ const Home = () => {
           Sign In
         </Button>
       </div>
+      {modalOpen && (
+        <Modal
+          message="아이디를 입력해주세요."
+          closeModal={() => setModalOpen(false)}
+        />
+      )}
     </section>
   );
 };

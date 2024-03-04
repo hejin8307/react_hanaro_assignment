@@ -18,7 +18,3 @@ const Button = ({ variant, className, children, ...props }: Props) => {
 };
 
 export default Button;
-
-// basic : grey
-// primary : main color
-//

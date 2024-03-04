@@ -1,28 +1,32 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { FaHeart } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 import useFetch from "../hooks/useFetch";
-import { useNavigate } from "react-router-dom";
-import { Button } from "../components";
-import { FaHeart } from "react-icons/fa";
-
-type AlbumList = {
-  id: number;
-  userId: number;
-  title: string;
-};
+import { AlbumListType } from "type";
+import { getStorage, setStorage } from "../utils/localStorage";
+import { AlbumList, Button } from "../components";
 
 const Album = () => {
   const navigate = useNavigate();
   const [selectedAlbumId, setSelectedAlbumId] = useState<number | null>(null);
   const { auth } = useAuth();
+
   const {
     isLoading,
     data: albumList,
     error,
-  } = useFetch<AlbumList[]>({
+  } = useFetch<AlbumListType[]>({
     url: `https://jsonplaceholder.typicode.com/albums?userId=${auth.id}`,
     dependencies: [auth.id],
   });
+
+  useEffect(() => {
+    const albumId = getStorage<number>("AlbumId");
+    if (albumId) {
+      setSelectedAlbumId(albumId);
+    }
+  }, []);
 
   if (isLoading) {
     return (
@@ -39,31 +43,34 @@ const Album = () => {
     );
   }
 
+  const handleSelect = (id: number) => {
+    setSelectedAlbumId(id);
+  };
+
   return (
-    <section className="m-4">
-      <div>Album List</div>
-      <ul>
+    <section className="h-full min-h-0 mt-4 ml-2">
+      <div className="mb-2">List</div>
+      <ul className="grid grid-cols-1 h-[89%] overflow-auto">
         {albumList?.map((item, idx) => (
-          <li
+          <AlbumList
             key={item.id}
-            className={`flex w-full gap-4 my-2 cursor-pointer hover:p-2 hover:rounded  ${
-              selectedAlbumId === item.id
-                ? "border-2 border-[#27374D] shadow-lg rounded p-2"
-                : ""
-            }`}
-            onClick={() => setSelectedAlbumId(item.id)}
-          >
-            <p className="w-1/12 text-center">{idx + 1}.</p>
-            <p className="w-11/12 line-clamp-1">{item.title}</p>
-          </li>
+            id={idx}
+            album={item}
+            isSelected={selectedAlbumId === item.id}
+            onSelect={() => handleSelect(item.id)}
+          />
         ))}
       </ul>
       <Button
         variant="primary"
         className="w-full mt-2"
-        onClick={() => navigate(`/album/${selectedAlbumId}`)}
+        onClick={() => {
+          setStorage("AlbumId", selectedAlbumId);
+          navigate(`/album/${selectedAlbumId}`);
+        }}
+        disabled={!selectedAlbumId}
       >
-        Detail
+        Details
       </Button>
     </section>
   );

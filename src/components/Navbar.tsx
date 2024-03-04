@@ -27,7 +27,6 @@ const Navbar = () => {
           <div>{auth.id}</div>
           <div>{auth.name}</div>
         </div>
-        {/* 로그아웃 버튼 */}
         <button className="cursor-pointer" onClick={handleLogout}>
           <TbLogout size={24} />
         </button>

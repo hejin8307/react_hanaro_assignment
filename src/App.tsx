@@ -1,7 +1,7 @@
 import { Outlet, useLocation } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
 import { Navbar } from "./components";
 import "./App.css";
-import { AuthProvider } from "./context/AuthContext";
 
 function App() {
   const location = useLocation();
